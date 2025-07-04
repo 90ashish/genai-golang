@@ -12,21 +12,28 @@ import (
 // RunAssistantWithMemory runs the interactive loop with chat history
 func RunAssistantWithMemory(apiKey, model string) error {
 	reader := bufio.NewReader(os.Stdin)
-
-	history := []Message{
-		{Role: "system", Content: "You are a memory-enabled assistant. Keep track of the full conversation and answer follow-up questions based on history."},
-	}
+	history := ResetHistory()
 
 	for {
 		fmt.Println("You: ")
 		input, _ := reader.ReadString('\n')
 		input = strings.TrimSpace(input)
 
-		if input == "/exit" {
-			fmt.Println("Goodbye!")
-			break
+		// Delegate to command handler
+		h, handled, quit, err := HandleCommand(input, history)
+		if handled {
+			if err != nil {
+				fmt.Println("Error:", err)
+			}
+			history = h
+			if quit {
+				fmt.Println("Goodbye!")
+				return nil
+			}
+			continue
 		}
 
+		// Regular user input
 		history = append(history, Message{Role: "user", Content: input})
 
 		// DEBUG: print history being sent
@@ -41,10 +48,10 @@ func RunAssistantWithMemory(apiKey, model string) error {
 			continue
 		}
 
+		// Print and append assistant response
 		fmt.Println("Assistant: ", response)
 		history = append(history, Message{Role: "assistant", Content: response})
 	}
-	return nil
 }
 
 func RunAssistantLoop(apiKey, model string) error {
