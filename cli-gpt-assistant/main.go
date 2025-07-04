@@ -17,9 +17,9 @@ func main() {
 	model := flag.String("model", "gpt-4o", "OpenAI model to use (e.g., gpt-4, gpt-3.5-turbo)")
 	flag.Parse()
 
-	// Run the assistant loop
+	// Run the assistant loop with session context
 	fmt.Printf("[GPT Assistant] Model: %s\nType your message below (type /exit to quit)\n\n", *model)
-	err := assistant.RunAssistantLoop(apiKey, *model)
+	err := assistant.RunAssistantWithMemory(apiKey, *model)
 	if err != nil {
 		log.Fatal("Error:", err)
 	}
